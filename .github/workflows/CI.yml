@@ -1,0 +1,32 @@
+name: Neovim Workflow
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    container:
+      image: neovim/neovim:nightly
+      options: --platform linux/arm64
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Set up Neovim
+        run: |
+          curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
+          chmod u+x nvim.appimage
+          ./nvim.appimage --appimage-extract
+          export PATH=$(pwd)/squashfs-root/usr/bin:$PATH
+
+      - name: Install Dein.vim and plugins
+        run: |
+          nvim --headless +PlugInstall +qall
+
+      - name: Run Neovim
+        run: nvim
